@@ -356,3 +356,96 @@ Behavior details:
 2. Run either `(openrouter)advprefix.py` or `(sglang)advprefix.py`
 3. Add the produced `gen_adv_*.jsonl` files to `FILE_NAMES` in `judge.py`
 4. Run `judge.py`
+
+## RQ2 Status
+
+RQ2 is no longer part of the active workflow for this project.
+
+For current use, treat RQ2 as removed from the maintained pipeline. The main supported documentation and execution flow is now RQ1 only.
+
+There may still be legacy RQ2 files and outputs present locally, including:
+
+- `rq2/dataset_making.ipynb`
+- `rq2/Untitled.ipynb`
+- `rq2/Untitled-Copy1.ipynb`
+- `rq2/evaluated_abliterated_dataset.json`
+- `rq2/unfiltered_abliterated_dataset.json`
+- `rq2/rq2_runs/`
+
+These are legacy artifacts from the older many-shot jailbreak workflow and should not be treated as part of the current documented pipeline unless they are explicitly restored and re-documented later.
+
+## `rq1_analysis.ipynb`
+
+Although the main generation and judging flow now has Python-script equivalents, `rq1_analysis.ipynb` is still the main analysis notebook for aggregating judged RQ1 outputs.
+
+### What it reads
+
+The notebook is configured with:
+
+```python
+RUN_DIR = Path("rq1_runs")
+OUT_DIR = RUN_DIR / "analysis_judged_prefill"
+```
+
+Its primary analysis section searches for judged files such as:
+
+- `judged_gen_*.jsonl`
+- `judged_gen_adv_*.jsonl`
+
+It parses these files by:
+
+- dataset: `harmbench` or `socialharmbench`
+- run variant: `base` or `f2`
+- file group: `gen` or `gen_adv`
+- model bucket: Gemma, Qwen, and Llama model-size buckets inferred from filenames
+
+The notebook also contains an exploratory pre-analysis cell that looks directly at `gen_adv*.jsonl` files to compare exact `prefill_text` overlap across model pairs.
+
+### What it computes
+
+The notebook builds normalized tables from judged outputs and then runs several analysis blocks.
+
+Main analysis sections:
+
+- `Analysis 1`: initial-response refusal rate for control vs static vs adversarial-prefix runs
+- `Analysis 2`: judge-YES rate over follow-up responses
+- `Analysis 3`: initial-response behavioral quadrants comparing control vs prefills
+- `Analysis 4`: judge-response behavioral quadrants comparing control vs prefills
+- `Analysis 5`: cross-quadrant contingency between initial-response shifts and judge-response shifts
+- `Extra Analysis`: shift agreement and discordance between initial-response changes and judged follow-up changes
+
+The refusal analysis uses a heuristic refusal detector over `initial_response`. The judge-side analysis uses the `judge` field written by `judge.py` and normalizes it to `YES` or `NO`.
+
+### What it saves
+
+The notebook saves analysis outputs under:
+
+```text
+rq1_runs/analysis_judged_prefill/
+```
+
+Examples of saved figures and tables referenced in the notebook include:
+
+- `refusal_rate_control_static_adv.png`
+- `judge_yes_rate_control_static_adv.png`
+- `initial_quadrants_main_stacked.png`
+- `judge_quadrants_main_stacked.png`
+- CSV summaries produced from intermediate analysis tables
+
+### Practical use
+
+Use `rq1_analysis.ipynb` after you have already produced and judged the RQ1 generation files.
+
+Recommended order:
+
+1. run one of the generation scripts
+2. run `judge.py`
+3. open and run `rq1_analysis.ipynb`
+
+If you want to restrict analysis to a subset, the notebook exposes filters such as:
+
+- `DATASETS_TO_INCLUDE`
+- `RUN_VARIANTS_TO_INCLUDE`
+- `MODEL_BUCKETS_TO_INCLUDE`
+
+So even though RQ1 generation is now documented mainly through the `.py` files, `rq1_analysis.ipynb` remains the downstream aggregation and plotting notebook for the judged outputs.
