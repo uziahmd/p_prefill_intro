@@ -449,3 +449,109 @@ If you want to restrict analysis to a subset, the notebook exposes filters such 
 - `MODEL_BUCKETS_TO_INCLUDE`
 
 So even though RQ1 generation is now documented mainly through the `.py` files, `rq1_analysis.ipynb` remains the downstream aggregation and plotting notebook for the judged outputs.
+
+## RQ2 (MSJ)
+
+This folder contains the notebooks for the MSJ-side workflow.
+
+MSJ here refers to a many-shot jailbreak setup where the model is given a long context made of harmful question-answer demonstration pairs before receiving a target harmful query. The RQ2 notebooks are used to build those demonstrations and then measure how attack success changes as the number of demonstrations increases.
+
+### Files
+
+- `dataset_making.ipynb`
+- `Untitled.ipynb`
+
+### Current note
+
+The RQ2 pipeline is notebook-based. At a minimum, this folder appears to separate:
+
+1. dataset preparation (`dataset_making.ipynb`)
+2. main RQ2/MSJ experimentation or analysis (`Untitled.ipynb`)
+
+### What `dataset_making.ipynb` does
+
+This notebook builds the demonstration pool used later for the many-shot jailbreak sweep.
+
+The main flow is:
+
+1. load harmful-prompt sources from Hugging Face
+2. combine StrongREJECT and JailbreakBench harmful behaviors
+3. filter out overlaps with `harmbench`, `socialharmbench`, and `advbench`
+4. deduplicate prompts
+5. normalize categories into a smaller shared taxonomy
+6. query a local uncensored model through SGLang to generate answers
+7. run Llama Guard 3 over each question-answer pair
+8. keep both the raw answers and the Llama Guard-based compliance labels
+
+Based on the notebook code, the main source datasets are:
+
+- `walledai/StrongREJECT`
+- `JailbreakBench/JBB-Behaviors`
+
+The notebook includes SGLang launch examples for uncensored local models such as:
+
+- `mlabonne/Meta-Llama-3.1-8B-Instruct-abliterated`
+- `mlabonne/Daredevil-8B-abliterated`
+
+It also includes a separate Llama Guard evaluation pass using:
+
+- `meta-llama/Llama-Guard-3-8B`
+
+Main outputs produced by this notebook:
+
+- `unfiltered_abliterated_dataset.json`
+- `evaluated_abliterated_dataset.json`
+
+The evaluated dataset contains question-answer pairs plus `classification_llamaguard`, which is later used to keep only demonstrations judged as compliant jailbreak examples.
+
+### What `Untitled.ipynb` does
+
+This notebook runs the actual MSJ sweep.
+
+The main pipeline in the notebook:
+
+1. load target harmful prompts, currently from `socialharmbench`
+2. load the prepared demonstration file, currently `evaluated_abliterated_dataset_back.json`
+3. keep only demonstration pairs where `classification_llamaguard == "Compliant"`
+4. group demonstrations by category
+5. build many-shot chat contexts from those harmful demonstrations
+6. send the final prompt to a local SGLang-served model
+7. classify the response with a refusal/compliance heuristic
+8. compute attack success rate as a function of shot count
+
+The current notebook configuration includes:
+
+- `SHOT_SWEEP = [4, 8, 16, 32, 64, 128]`
+- `OUTPUT_DIR = "rq2_runs"`
+- `OUTPUT_CSV = os.path.join(OUTPUT_DIR, "qwen3-8b_msj_results.csv")`
+
+So the main output of the MSJ sweep is a CSV in `rq2/rq2_runs/` containing per-query results and a summary attack success rate by shot count.
+
+The notebook also contains an additional examples-based branch that uses `examples.json` as the demonstration source. That section appears to be a secondary experiment path or debugging path rather than the primary RQ2 flow.
+
+### How MSJ is evaluated in this repo
+
+In the current notebook implementation, MSJ success is measured with a lightweight refusal heuristic rather than an external judge model.
+
+The response is labeled:
+
+- `Refused` if it starts with or contains common refusal patterns
+- `Compliant` otherwise
+
+The notebook then reports attack success rate as the percentage of responses classified as `Compliant` at each value in the shot sweep.
+
+### Main RQ2 artifacts in this folder
+
+Important files currently present in `rq2/` include:
+
+- `unfiltered_abliterated_dataset.json`
+- `unfiltered_abliterated_dataset_back.json`
+- `evaluated_abliterated_dataset.json`
+- `evaluated_abliterated_dataset_back.json`
+- `examples.json`
+- `qa_many_shot_jailbreak.csv`
+- `rq2_runs/`
+
+
+### Recommended improvement
+PLease do check if I messed up a setting in MSJ.
