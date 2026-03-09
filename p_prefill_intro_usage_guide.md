@@ -115,34 +115,28 @@ Analysis notebook for aggregating judged outputs and computing experiment-level 
 Visualization notebook for plotting or presenting the processed results.
 
 ---
+## RQ2 (MSJ)
 
-### `rq2/`
-Contains exploratory / dataset-preparation notebooks:
+This folder contains the notebooks for the MSJ-side workflow.
 
+### Files
 - `dataset_making.ipynb`
 - `Untitled.ipynb`
 - `Untitled-Copy1.ipynb`
 
-These appear separate from the main RQ1 execution path based on the repo structure; I did not deeply inspect the RQ2 notebooks in this draft.
+### Current note
+The RQ2 pipeline is notebook-based. At a minimum, this folder appears to separate:
+1. dataset preparation (`dataset_making.ipynb`)
+2. main RQ2/MSJ experimentation or analysis (`Untitled.ipynb`)
+3. a secondary or variant notebook (`Untitled-Copy1.ipynb`)
 
----
+### Suggested usage order
+1. Open and run `dataset_making.ipynb` first to prepare the MSJ data.
+2. Run `Untitled.ipynb` for the main RQ2 workflow.
+3. Run `Untitled-Copy1.ipynb` for any variant analysis, backup workflow, or extended experiments.
 
-## 2) Expected environment
-
-At minimum, the notebooks use:
-
-- Python 3.10+
-- Jupyter Notebook / JupyterLab
-- `pandas`
-- `tqdm`
-- `python-dotenv`
-- `openai`
-- `datasets`
-- `torch`
-- `transformers`
-- `httpx`
-- `requests`
-- `psutil`
+### Recommended improvement
+Rename the two `Untitled*.ipynb` notebooks to descriptive names so the RQ2/MSJ pipeline is easier to understand and document.
 
 Suggested install:
 
