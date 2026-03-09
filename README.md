@@ -1,8 +1,8 @@
 # p_prefill_intro
 
-This repository studies RQ1 prompt-prefill behavior in instruction-tuned LLMs. The original workflow was notebook-first, but the `rq1/` folder now includes Python script equivalents for the main generation and judging steps. This document is the single source of truth for the RQ1 Python workflow.
+This repository studies RQ1 prompt-prefill behavior in instruction-tuned LLMs. The original workflow was notebook-first, but the `rq1/` folder now includes Python script equivalents for the main generation and judging steps. This document is the single source of truth for the RQ1 Python workflow and the main points about rq2.
 
-This README only covers the RQ1 `.py` files and intentionally does not document `rq1_analysis` here.
+This README covers the RQ1 `.py` files, rq1_analysis.ipynb` and the rq2.
 
 ## Scope
 
@@ -44,6 +44,10 @@ Datasets supported by the scripts:
 
 - `harmbench`, loaded from `harmbench_behaviors_text_all.csv`
 - `socialharmbench`, loaded from `psyonp/SocialHarmBench`
+
+Across the AdvPrefix scripts:
+- It prduces the ADVPrefixes using the mlabonne/Meta-Llama-3.1-8B-Instruct-abliterated model basing the pipline on the ADVPrefix paper.
+Paper: https://arxiv.org/abs/2412.10321
 
 ## Environment Setup
 
@@ -144,7 +148,7 @@ In practice:
 
 ### 2. `(openrouter)advprefix.py`
 
-Similarly, the `(openrouter)advprefix.py` file matches already produced prefixes from the smaller models, maps them to the bigger OpenRouter models, and generates data in the same ordering as above, except each dataset instance has only 1 adversarial-prefix generation per follow-up.
+Similarly, the `(openrouter)advprefix.py` file matches already produced ADVprefixes (using the gen_advprefix.py file) from the smaller models, maps them to the bigger OpenRouter models, and generates data in the same ordering as above, except each dataset instance has only 1 adversarial-prefix generation per follow-up.
 
 It produces:
 
@@ -242,6 +246,7 @@ Sample SGLang server calls:
 ### 4. `(sglang)advprefix.py`
 
 Similarly, by selecting the models and hosting them on SGLang, you can produce the adversarial-prefix files from `(sglang)advprefix.py`.
+Similar to static prefix file you will have to host models on sglang manualy.
 
 This script:
 
@@ -258,7 +263,7 @@ Important runtime details:
 
 ### 5. `gen_advprefix.py`
 
-The `gen_advprefix.py` file is the one to use with the uncensored LLM to generate and shortlist prefixes. You do not need to change anything here unless you want to change the list of models involved.
+The `gen_advprefix.py` file is the one to use with the uncensored LLM to generate and shortlist prefixes.THis is an end to end script that load and unload models in memory itself. You do not need to change anything here unless you want to change the list of models involved.
 
 Main generator and target model block:
 
@@ -357,23 +362,6 @@ Behavior details:
 3. Add the produced `gen_adv_*.jsonl` files to `FILE_NAMES` in `judge.py`
 4. Run `judge.py`
 
-## RQ2 Status
-
-RQ2 is no longer part of the active workflow for this project.
-
-For current use, treat RQ2 as removed from the maintained pipeline. The main supported documentation and execution flow is now RQ1 only.
-
-There may still be legacy RQ2 files and outputs present locally, including:
-
-- `rq2/dataset_making.ipynb`
-- `rq2/Untitled.ipynb`
-- `rq2/Untitled-Copy1.ipynb`
-- `rq2/evaluated_abliterated_dataset.json`
-- `rq2/unfiltered_abliterated_dataset.json`
-- `rq2/rq2_runs/`
-
-These are legacy artifacts from the older many-shot jailbreak workflow and should not be treated as part of the current documented pipeline unless they are explicitly restored and re-documented later.
-
 ## `rq1_analysis.ipynb`
 
 Although the main generation and judging flow now has Python-script equivalents, `rq1_analysis.ipynb` is still the main analysis notebook for aggregating judged RQ1 outputs.
@@ -451,10 +439,22 @@ If you want to restrict analysis to a subset, the notebook exposes filters such 
 So even though RQ1 generation is now documented mainly through the `.py` files, `rq1_analysis.ipynb` remains the downstream aggregation and plotting notebook for the judged outputs.
 
 ## RQ2 (MSJ)
-
 This folder contains the notebooks for the MSJ-side workflow.
 
 MSJ here refers to a many-shot jailbreak setup where the model is given a long context made of harmful question-answer demonstration pairs before receiving a target harmful query. The RQ2 notebooks are used to build those demonstrations and then measure how attack success changes as the number of demonstrations increases.
+
+Paper: https://www.anthropic.com/research/many-shot-jailbreaking
+
+### RQ2 Status
+
+RQ2 is no longer part of the active workflow for this project, but I would recommend that you do make one round of test on the MSJ pipeline.
+
+- `rq2/dataset_making.ipynb`
+- `rq2/Untitled.ipynb`
+- `rq2/Untitled-Copy1.ipynb`
+- `rq2/evaluated_abliterated_dataset.json`
+- `rq2/unfiltered_abliterated_dataset.json`
+- `rq2/rq2_runs/`
 
 ### Files
 
